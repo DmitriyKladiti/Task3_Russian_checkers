@@ -1,12 +1,20 @@
-import Colors
-
-
 /**
  * Клетка поля
  */
 class Cell(
-    var row: Int = 0,
-    var column: Int = 0,
-    var color: Colors = Colors.WHITE,
+    val row: Int = 0,
+    val column: Int = 0,
+    val color: Colors = Colors.White,
     var checker: Checker? = null
-)
+) {
+    override fun toString(): String {
+        if(this.checker!=null){
+            return this.checker.toString()
+        }
+        else{
+            if (this.color == Colors.White)
+                return "_"
+            return "#"
+        }
+    }
+}

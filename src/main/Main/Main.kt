@@ -1,5 +1,11 @@
 import Colors.*
 
 fun main(args: Array<String>) {
-    val cell = Cell(1, 2, BLACK, null)
+    var board = Board()
+    println(board)
+    board.MoveChecker(0,0,6,6)
+
+//    for (i in 0..1024) {
+//        println("$i: '${i.toChar()}'")
+//    }
 }

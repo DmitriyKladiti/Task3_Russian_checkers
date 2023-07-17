@@ -6,9 +6,9 @@ enum class Colors {
     /**
      * Белый цвет
      */
-    WHITE,
+    White,
     /**
      * Черный цвет
      */
-    BLACK
+    Black
 }
