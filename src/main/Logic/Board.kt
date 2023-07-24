@@ -1,3 +1,4 @@
+import java.lang.Exception
 import java.lang.IllegalArgumentException
 
 class Board {
@@ -42,11 +43,21 @@ class Board {
         return row >= 0 && row < size && column >= 0 && column < size
     }
 
+    public fun Get(row: Int, column: Int):Cell{
+        if (!CheckCoordinate(row, column))
+            throw IllegalArgumentException("Некоректные координаты клетки: ($row, $column)")
+        return this.cells.get(row).get(column)
+    }
+
     public fun MoveChecker(rowFrom: Int, columnFrom: Int, rowTo: Int, columnTo: Int) {
-        if (!CheckCoordinate(rowFrom, columnFrom))
-            throw IllegalArgumentException("Неправильные начальные координаты: ($rowFrom, $columnFrom)")
-        if (!CheckCoordinate(rowTo, columnTo))
-            throw IllegalArgumentException("Неправильные конечные координаты: ($rowTo, $columnTo)")
+        var cellFrom = this.Get(rowFrom, columnFrom)
+        if(cellFrom.checker==null)
+            throw Exception("На исходной клетке нет шашки")
+        var cellTo = this.Get(rowTo, columnTo)
+        if(cellTo.checker!=null)
+            throw Exception("На конечной клетке уже стоит шашка")
+        cellTo.checker = cellFrom.checker
+        cellFrom.checker = null
     }
 
     override fun toString(): String {
