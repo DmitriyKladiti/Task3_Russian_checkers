@@ -2,8 +2,8 @@ import java.lang.Exception
 import java.lang.IllegalArgumentException
 
 class Board {
-    val size: Int = 8
-    val cells: Array<Array<Cell>> = Array(size) { i ->
+    private val size: Int = 8
+    private val cells: Array<Array<Cell>> = Array(size) { i ->
         Array(size) { j ->
             Cell(
                 i, j,
@@ -15,6 +15,16 @@ class Board {
     init {
         InitializeBoard()
     }
+
+    //region Сеттері и геттері
+    fun GetSize(): Int {
+        return this.size
+    }
+
+    fun GetCells():Array<Array<Cell>>{
+        return this.cells
+    }
+    //endregion
 
     private fun InitializeBoard() {
 //        Установка шашек на правильніе позиции
@@ -43,7 +53,7 @@ class Board {
         return row >= 0 && row < size && column >= 0 && column < size
     }
 
-    public fun Get(row: Int, column: Int):Cell{
+    public fun Get(row: Int, column: Int): Cell {
         if (!CheckCoordinate(row, column))
             throw IllegalArgumentException("Некоректные координаты клетки: ($row, $column)")
         return this.cells.get(row).get(column)
@@ -51,12 +61,12 @@ class Board {
 
     public fun MoveChecker(rowFrom: Int, columnFrom: Int, rowTo: Int, columnTo: Int) {
         var cellFrom = this.Get(rowFrom, columnFrom)
-        if(cellFrom.checker==null)
+        if (cellFrom.checker == null)
             throw Exception("На исходной клетке нет шашки")
         var cellTo = this.Get(rowTo, columnTo)
-        if(cellTo.checker!=null)
+        if (cellTo.checker != null)
             throw Exception("На конечной клетке уже стоит шашка")
-        cellTo.checker = cellFrom.checker
+        cellTo.SetChecker(cellFrom.checker!!)
         cellFrom.checker = null
     }
 

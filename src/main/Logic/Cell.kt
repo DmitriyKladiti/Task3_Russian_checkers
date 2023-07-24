@@ -7,11 +7,15 @@ class Cell(
     val color: Colors = Colors.White,
     var checker: Checker? = null
 ) {
+    public fun SetChecker(checker: Checker) {
+        this.checker = checker
+        this.checker!!.Move(this.row, this.column)
+    }
+
     override fun toString(): String {
-        if(this.checker!=null){
+        if (this.checker != null) {
             return this.checker.toString()
-        }
-        else{
+        } else {
             if (this.color == Colors.White)
                 return "_"
             return "#"
