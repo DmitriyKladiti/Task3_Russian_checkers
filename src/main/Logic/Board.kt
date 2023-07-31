@@ -1,6 +1,7 @@
 import java.lang.Exception
 import java.lang.IllegalArgumentException
 
+@Suppress("FunctionName")
 class Board {
     private val size: Int = 8
     private val cells: Array<Array<Cell>> = Array(size) { i ->
@@ -20,8 +21,13 @@ class Board {
     fun GetSize(): Int {
         return this.size
     }
-
-    fun GetCells():Array<Array<Cell>>{
+    fun GetCell(row: Int, column: Int): Cell {
+        if (!CheckCoordinate(row, column))
+            throw IllegalArgumentException("Некоректные координаты клетки: ($row, $column)")
+        return this.cells.get(row).get(column)
+    }
+    @Suppress("unused")
+    fun GetCells(): Array<Array<Cell>> {
         return this.cells
     }
     //endregion
@@ -39,8 +45,8 @@ class Board {
         }
     }
 
-    public fun GetCheckers(): ArrayList<Checker> {
-        var checkers = ArrayList<Checker>()
+    fun GetCheckers(): ArrayList<Checker> {
+        val checkers = ArrayList<Checker>()
         for (row in cells) {
             for (cell in row) {
                 cell.checker?.let { checkers.add(it) }
@@ -49,25 +55,33 @@ class Board {
         return checkers
     }
 
-    public fun CheckCoordinate(row: Int, column: Int): Boolean {
+    fun CheckCoordinate(row: Int, column: Int): Boolean {
         return row >= 0 && row < size && column >= 0 && column < size
     }
 
-    public fun Get(row: Int, column: Int): Cell {
-        if (!CheckCoordinate(row, column))
-            throw IllegalArgumentException("Некоректные координаты клетки: ($row, $column)")
-        return this.cells.get(row).get(column)
-    }
-
-    public fun MoveChecker(rowFrom: Int, columnFrom: Int, rowTo: Int, columnTo: Int) {
-        var cellFrom = this.Get(rowFrom, columnFrom)
+    fun MoveChecker(rowFrom: Int, columnFrom: Int, rowTo: Int, columnTo: Int) {
+        val cellFrom = this.GetCell(rowFrom, columnFrom)
         if (cellFrom.checker == null)
             throw Exception("На исходной клетке нет шашки")
-        var cellTo = this.Get(rowTo, columnTo)
+        val cellTo = this.GetCell(rowTo, columnTo)
         if (cellTo.checker != null)
             throw Exception("На конечной клетке уже стоит шашка")
         cellTo.SetChecker(cellFrom.checker!!)
-        cellFrom.checker = null
+        cellFrom.SetChecker(null)
+    }
+
+    fun RemoveChecker(row: Int, column: Int) {
+        val cell = this.GetCell(row, column)
+        if (cell.checker == null)
+            throw Exception("На исходной клетке нет шашки")
+        cell.SetChecker(null)
+    }
+
+    fun MakeKing(row: Int, column: Int) {
+        val cell = this.GetCell(row, column)
+        if (cell.checker == null)
+            throw Exception("На исходной клетке нет шашки")
+        cell.checker!!.type = CheckerType.King
     }
 
     override fun toString(): String {

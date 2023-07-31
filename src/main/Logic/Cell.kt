@@ -7,9 +7,9 @@ class Cell(
     val color: Colors = Colors.White,
     var checker: Checker? = null
 ) {
-    public fun SetChecker(checker: Checker) {
+    fun SetChecker(checker: Checker?) {
         this.checker = checker
-        this.checker!!.Move(this.row, this.column)
+        this.checker?.Move(this.row, this.column)
     }
 
     override fun toString(): String {
