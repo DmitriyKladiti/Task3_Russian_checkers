@@ -24,8 +24,19 @@ class Game {
         return this.GetCurrentPlayer()
     }
 
+    fun SelectChecker(row: Int, column: Int) {
+
+
+    }
+
+    fun MakeMove(rowFrom: Int, columnFrom: Int, rowTo: Int, columnTo: Int) {
+        //this.board.MoveChecker()
+    }
 
     fun Start() {
+        this.isStarted = true
+        while (this.isStarted) {
 
+        }
     }
 }

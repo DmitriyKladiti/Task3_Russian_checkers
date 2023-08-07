@@ -5,7 +5,8 @@ class Cell(
     val row: Int = 0,
     val column: Int = 0,
     val color: Colors = Colors.White,
-    var checker: Checker? = null
+    var checker: Checker? = null,
+    var selection: Selections = Selections.None
 ) {
     fun SetChecker(checker: Checker?) {
         this.checker = checker

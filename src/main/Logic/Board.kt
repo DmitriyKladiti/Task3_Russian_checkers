@@ -51,6 +51,9 @@ class Board {
     }
     //endregion
 
+    //region Методы
+
+    //region Инициализация
     private fun InitializeBoard() {
 //        Установка шашек на правильные позиции
         for (row in cells) {
@@ -62,7 +65,41 @@ class Board {
             }
         }
     }
+    //endregion
 
+    //region Проверки
+    /**
+     * Проверяет, являются ли переданные координаты допустимыми на доске
+     * @param row номер строки
+     * @param column номер столбца
+     * @return true, если координаты допустимы, иначе false
+     */
+    fun CheckCoordinate(row: Int, column: Int): Boolean {
+        return row >= 0 && row < size && column >= 0 && column < size
+    }
+
+    fun GetAvailableMoves(row: Int, column: Int): List<Pair<Int, Int>> {
+        val availableMoves = mutableListOf<Pair<Int, Int>>()
+        val cell = GetCell(row, column)
+        // Если на клетке нет шашки или дамки, возвращаем пустой список
+        val checker = cell.checker ?: return emptyList()
+        if (checker.type == CheckerType.King) {
+
+        } else {
+//            if (cell.color == Colors.White) {
+//                addDiagonalMove(row, column, 1, -1, availableMoves) // вниз-влево
+//                addDiagonalMove(row, column, 1, 1, availableMoves)  // вниз-вправо
+//            } else if (cell.color == Colors.Black) {
+//                addDiagonalMove(row, column, -1, -1, availableMoves) // вверх-влево
+//                addDiagonalMove(row, column, -1, 1, availableMoves)  // вверх-вправо
+//            }
+        }
+
+        return availableMoves
+    }
+    //endregion
+
+    //region Работа с шашками
     /**
      * Возвращает список всех шашек на доске
      * @return список шашек
@@ -75,16 +112,6 @@ class Board {
             }
         }
         return checkers
-    }
-
-    /**
-     * Проверяет, являются ли переданные координаты допустимыми на доске
-     * @param row номер строки
-     * @param column номер столбца
-     * @return true, если координаты допустимы, иначе false
-     */
-    fun CheckCoordinate(row: Int, column: Int): Boolean {
-        return row >= 0 && row < size && column >= 0 && column < size
     }
 
     /**
@@ -132,6 +159,32 @@ class Board {
         cell.checker!!.type = CheckerType.King
     }
 
+    fun SelectChecker(row: Int, column: Int) {
+        val cell = this.GetCell(row, column)
+        if (cell.checker == null) {
+            throw Exception("На указанной клетке нет шашки")
+        }
+        SelectCell(row, column, Selections.CheckerSelected)
+
+    }
+    //endregion
+
+    //region Работа с клетками
+    fun UnselectAll() {
+        for (row in cells) {
+            for (cell in row) {
+                cell.selection = Selections.None
+            }
+        }
+    }
+
+    fun SelectCell(row: Int, column: Int, selection: Selections) {
+        val cell = this.GetCell(row, column)
+        cell.selection = selection
+    }
+    //endregion
+
+
     /**
      * Возвращает строковое представление игровой доски
      * @return строка, представляющая доску
@@ -146,4 +199,5 @@ class Board {
         }
         return builder.toString()
     }
+    //endregion
 }
