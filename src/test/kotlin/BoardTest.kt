@@ -1,5 +1,6 @@
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.function.Executable
@@ -281,6 +282,7 @@ class BoardTest {
     }
     //endregion
 
+    //region Дамка
     @Test
     fun testMakeKing_SourceCellEmpty() {
         for (row in 0 until board.GetSize()) {
@@ -327,4 +329,69 @@ class BoardTest {
             }
         }
     }
+    //endregion
+
+    //region Проверка доступніх ходов
+    @Test
+    fun testGetAvailableMoves_NoChecker_ReturnsEmptyList() {
+        val board = Board()
+        val row = 3
+        val column = 2
+        val availableMoves = board.GetAvailableMoves(row, column)
+        assertEquals(emptyList<Pair<Int, Int>>(), availableMoves)
+    }
+
+    @Test
+    fun testGetAvailableMoves_NormalChecker_ReturnsCorrectMoves() {
+        val board = Board()
+        val row = 5
+        val column = 4
+        val availableMoves = board.GetAvailableMoves(row, column)
+        val expectedMoves = listOf(
+            Pair(4, 3),
+            Pair(4, 5)
+        )
+        assertEquals(expectedMoves, availableMoves)
+    }
+
+    @Test
+    fun testGetAvailableMoves_KingChecker_EmptyBoard() {
+        val board = Board()
+        val row = 2
+        val column = 3
+        board.RemoveCheckers()
+        val availableMoves = board.GetAvailableMoves(row, column)
+        assertEquals(emptyList<Pair<Int, Int>>(), availableMoves)
+    }
+
+    @Test
+    fun testGetAvailableMoves_KingChecker_AllMoves() {
+        val board = Board()
+        val row = 5
+        val column = 4
+        board.RemoveCheckers()
+        board.AddChecker(row, column, Checker(row, column, Colors.Black, CheckerType.King))
+        val availableMoves = board.GetAvailableMoves(row, column)
+        // Здесь укажите ожидаемые координаты всех доступных ходов для дамки
+        val expectedMoves = listOf(
+            Pair(4, 3),
+            Pair(4, 5),
+            Pair(3, 2),
+            Pair(3, 6),
+            Pair(2, 1),
+            Pair(2, 7),
+            Pair(1, 0),
+            Pair(1, 8),
+            Pair(0, 1),
+            Pair(0, 7),
+            Pair(1, 2),
+            Pair(1, 6),
+            Pair(2, 3),
+            Pair(2, 5),
+            Pair(3, 4),
+            Pair(3, 4)
+        )
+        assertEquals(expectedMoves, availableMoves)
+    }
+    //endregion
 }

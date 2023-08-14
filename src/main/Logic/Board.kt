@@ -37,7 +37,7 @@ class Board {
     fun GetCell(row: Int, column: Int): Cell {
         if (!CheckCoordinate(row, column))
             throw IllegalArgumentException("Некорректные координаты клетки: ($row, $column)")
-        return this.cells.get(row).get(column)
+        return this.cells[row][column]
     }
 
     /**
@@ -84,18 +84,50 @@ class Board {
         // Если на клетке нет шашки или дамки, возвращаем пустой список
         val checker = cell.checker ?: return emptyList()
         if (checker.type == CheckerType.King) {
-
+            AddDiagonalMoves(row, column, -1, -1, availableMoves) // вверх-влево
+            AddDiagonalMoves(row, column, -1, 1, availableMoves)  // вверх-вправо
+            AddDiagonalMoves(row, column, 1, -1, availableMoves)  // вниз-влево
+            AddDiagonalMoves(row, column, 1, 1, availableMoves)   // вниз-вправо
         } else {
-//            if (cell.color == Colors.White) {
-//                addDiagonalMove(row, column, 1, -1, availableMoves) // вниз-влево
-//                addDiagonalMove(row, column, 1, 1, availableMoves)  // вниз-вправо
-//            } else if (cell.color == Colors.Black) {
-//                addDiagonalMove(row, column, -1, -1, availableMoves) // вверх-влево
-//                addDiagonalMove(row, column, -1, 1, availableMoves)  // вверх-вправо
-//            }
+            if (cell.checker!!.color == Colors.White) {
+                AddDiagonalMove(row, column, -1, -1, availableMoves) // вниз-влево
+                AddDiagonalMove(row, column, -1, 1, availableMoves)  // вниз-вправо
+            } else if (cell.checker!!.color == Colors.Black) {
+                AddDiagonalMove(row, column, 1, -1, availableMoves) // вверх-влево
+                AddDiagonalMove(row, column, 1, 1, availableMoves)  // вверх-вправо
+            }
         }
 
         return availableMoves
+    }
+
+    /**
+     * Рекурсивный метод для добавления возможных ходов по диагонали.
+     */
+    private fun AddDiagonalMoves(row: Int, column: Int, rowDir: Int, colDir: Int, moves: MutableList<Pair<Int, Int>>) {
+        val newRow = row + rowDir
+        val newColumn = column + colDir
+        if (!CheckCoordinate(newRow, newColumn)) {
+            return
+        }
+        val cell = GetCell(newRow, newColumn)
+        // Если на клетке нет шашки, добавляем ход
+        if (cell.checker == null) {
+            moves.add(Pair(newRow, newColumn))
+            AddDiagonalMoves(newRow, newColumn, rowDir, colDir, moves) // Рекурсивно ищем следующие ходы
+        }
+    }
+
+    /**
+     * Метод для добавления возможного хода по диагонали.
+     */
+    private fun AddDiagonalMove(row: Int, column: Int, rowDir: Int, colDir: Int, moves: MutableList<Pair<Int, Int>>) {
+        val newRow = row + rowDir
+        val newColumn = column + colDir
+
+        if (CheckCoordinate(newRow, newColumn) && GetCell(newRow, newColumn).checker == null) {
+            moves.add(Pair(newRow, newColumn))
+        }
     }
     //endregion
 
@@ -113,6 +145,23 @@ class Board {
         }
         return checkers
     }
+
+    /**
+     * Добавляет шашку на указанную клетку доски.
+     *
+     * @param row Строка клетки.
+     * @param column Колонка клетки.
+     * @param checker Шашка для добавления.
+     * @throws Exception Если на указанной клетке уже есть шашка.
+     */
+    fun AddChecker(row: Int, column: Int, checker: Checker) {
+        val cell = GetCell(row, column)
+        if (cell.checker != null) {
+            throw Exception("На указанной клетке уже есть шашка")
+        }
+        cell.checker = checker
+    }
+
 
     /**
      * Перемещает шашку с указанными координатами на другую клетку
@@ -147,6 +196,19 @@ class Board {
     }
 
     /**
+     * Удаляет все шашки с доски.
+     */
+    fun RemoveCheckers() {
+        for (i in 0 until this.GetSize()) {
+            for (j in 0 until this.GetSize()) {
+                if (this.GetCell(i, j).checker != null)
+                    RemoveChecker(i, j)
+            }
+        }
+    }
+
+
+    /**
      * Превращает шашку на указанных координатах в короля
      * @param row номер строки клетки с шашкой
      * @param column номер столбца клетки с шашкой
@@ -165,7 +227,10 @@ class Board {
             throw Exception("На указанной клетке нет шашки")
         }
         SelectCell(row, column, Selections.CheckerSelected)
-
+        val availableMoves = this.GetAvailableMoves(row, column)
+        for (item in availableMoves) {
+            SelectCell(item.first, item.second, Selections.AvailableMove)
+        }
     }
     //endregion
 
