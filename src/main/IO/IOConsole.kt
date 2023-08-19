@@ -82,6 +82,9 @@ class IOConsole : IO {
         if (cell.selection == Selections.AvailableMove) {
             PrintStr(ANSI_BLACK, ANSI_BG_LIGHT_CYAN, cellStr)
         }
+        if (cell.selection == Selections.AvailableBeat) {
+            PrintStr(ANSI_BLACK, ANSI_BG_RED, cellStr)
+        }
         //endregion
 
     }

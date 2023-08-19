@@ -120,6 +120,44 @@ class Board {
         return availableMoves
     }
 
+    fun GetAvailableBeats(row: Int, column: Int): List<Pair<Int, Int>> {
+        val availableBeats = mutableListOf<Pair<Int, Int>>()
+        val cell = GetCell(row, column)
+        val checker = cell.checker ?: return emptyList()
+
+        val directions = if (checker.type == CheckerType.King) {
+            (-7..7).flatMap { rowDelta ->
+                (-7..7).map { colDelta ->
+                    Pair(rowDelta, colDelta)
+                }
+            }
+        } else {
+            listOf(Pair(-1, -1), Pair(-1, 1), Pair(1, -1), Pair(1, 1))
+        }
+
+
+        for ((rowDelta, colDelta) in directions) {
+            val captureRow = row + rowDelta * 2
+            val captureColumn = column + colDelta * 2
+            val landingRow = row + rowDelta
+            val landingColumn = column + colDelta
+
+            if (CheckCoordinate(captureRow, captureColumn) && CheckCoordinate(landingRow, landingColumn)) {
+                val captureCell = GetCell(captureRow, captureColumn)
+                val captureChecker = captureCell.checker
+                val landingCell = GetCell(landingRow, landingColumn)
+                val landingChecker = landingCell.checker
+
+                if (captureChecker == null && landingChecker != null && landingChecker.color != checker.color) {
+                    availableBeats.add(Pair(captureRow, captureColumn))
+                }
+            }
+        }
+
+        return availableBeats
+    }
+
+
     /**
      * Рекурсивный метод для добавления возможных ходов по диагонали.
      */
@@ -246,9 +284,16 @@ class Board {
             throw Exception("На указанной клетке нет шашки")
         }
         SelectCell(row, column, Selections.CheckerSelected)
-        val availableMoves = this.GetAvailableMoves(row, column)
-        for (item in availableMoves) {
-            SelectCell(item.first, item.second, Selections.AvailableMove)
+        var availableBeats = this.GetAvailableBeats(row, column)
+        if (availableBeats.size > 0) {
+            for (item in availableBeats) {
+                SelectCell(item.first, item.second, Selections.AvailableBeat)
+            }
+        } else {
+            val availableMoves = this.GetAvailableMoves(row, column)
+            for (item in availableMoves) {
+                SelectCell(item.first, item.second, Selections.AvailableMove)
+            }
         }
     }
     //endregion

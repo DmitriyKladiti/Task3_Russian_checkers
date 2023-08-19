@@ -13,5 +13,9 @@ public enum Selections {
     /**
      * На даннукю клетку может походить шашка
      */
-    AvailableMove
+    AvailableMove,
+    /**
+     * На даннукю клетку может походить шашка, после взятия шашки соперника
+     */
+    AvailableBeat
 }

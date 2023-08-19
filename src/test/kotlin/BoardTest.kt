@@ -1,6 +1,7 @@
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.function.Executable
@@ -375,20 +376,19 @@ class BoardTest {
         // Здесь укажите ожидаемые координаты всех доступных ходов для дамки
         val expectedMoves = listOf(
             Pair(4, 3),
-            Pair(4, 5),
             Pair(3, 2),
-            Pair(3, 6),
             Pair(2, 1),
-            Pair(2, 7),
             Pair(1, 0),
-            Pair(1, 2),
-            Pair(1, 6),
-            Pair(2, 3),
-            Pair(2, 5),
-            Pair(3, 4),
-            Pair(3, 4)
+            Pair(4, 5),
+            Pair(3, 6),
+            Pair(2, 7),
+            Pair(6, 3),
+            Pair(7, 2),
+            Pair(6, 5),
+            Pair(7, 6)
         )
         assertEquals(expectedMoves, availableMoves)
+        assertTrue(expectedMoves.containsAll(availableMoves))
     }
     //endregion
 }
