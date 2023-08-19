@@ -41,6 +41,25 @@ class Board {
     }
 
     /**
+     * Получает массив клеток для указанной строки доски.
+     *
+     * @param row Номер строки.
+     * @return Массив клеток для указанной строки.
+     * @throws IllegalStateException Если доска не была инициализирована.
+     * @throws IllegalArgumentException Если номер строки некорректен.
+     */
+    fun GetRow(row: Int): Array<Cell> {
+        if (this.cells == null) {
+            throw IllegalStateException("Доска не инициализирована")
+        }
+        if (row < 0 || row >= this.GetSize()) {
+            throw IllegalArgumentException("Некорректный номер строки: $row")
+        }
+        return this.cells[row]
+    }
+
+
+    /**
      * Возвращает двумерный массив всех клеток доски
      * (предпочтительнее использовать этот метод только для тестирования или особых случаев)
      * @return двумерный массив клеток
@@ -263,6 +282,21 @@ class Board {
             builder.append('\n')
         }
         return builder.toString()
+    }
+    //endregion
+
+    //region Операторі
+    operator fun get(row: Int, column: Int): Cell {
+        return GetCell(row, column)
+    }
+
+    operator fun set(row: Int, column: Int, cell: Cell) {
+        var targetCell = GetCell(row, column)
+        targetCell = cell
+    }
+
+    operator fun get(row: Int): Array<Cell> {
+        return GetRow(row)
     }
     //endregion
 }

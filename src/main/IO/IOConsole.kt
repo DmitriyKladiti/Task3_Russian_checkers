@@ -1,14 +1,18 @@
 val ANSI_RESET = "\u001B[0m"
 val ANSI_BLACK = "\u001B[30m"
+val ANSI_BROWN = "\u001B[33m"
+
 val ANSI_WHITE = "\u001B[37m"
 val ANSI_RED = "\u001B[31m"
 val ANSI_GREEN = "\u001B[32m"
 val ANSI_LIGHT_CYAN = "\u001B[36m"
 val ANSI_BG_RED = "\u001B[41m"
 val ANSI_BG_GREEN = "\u001B[42m"
+val ANSI_BG_GREEN_BROWN = "\u001B[42;33m"
 val ANSI_BG_LIGHT_CYAN = "\u001B[46m"
 val ANSI_BG_WHITE = "\u001B[47m";
 val ANSI_BG_BLACK = "\u001B[40m"
+val ANSI_BG_YELLOW_BLACK = "\u001B[43;30m"
 
 
 class IOConsole : IO {
@@ -49,10 +53,14 @@ class IOConsole : IO {
             cellStr = "┌───┐"
         }
         if (part == CellParts.Middle) {
-            var checkerStr = " "
-            if (cell.checker != null)
-                checkerStr = cell.checker.toString()
-            cellStr = "│ $checkerStr │"
+            if (cell.displayContent != null) {
+                cellStr = "│ ${cell.displayContent} │"
+            } else {
+                var checkerStr = " "
+                if (cell.checker != null)
+                    checkerStr = cell.checker.toString()
+                cellStr = "│ $checkerStr │"
+            }
         }
         if (part == CellParts.Bottom) {
             cellStr = "└───┘"
@@ -65,6 +73,8 @@ class IOConsole : IO {
                 PrintStr(ANSI_BLACK, ANSI_BG_WHITE, cellStr)
             if (cell.color == Colors.Black)
                 PrintStr(ANSI_WHITE, ANSI_BG_BLACK, cellStr)
+            if (cell.color == Colors.Edge)
+                PrintStr(ANSI_BLACK, ANSI_BG_YELLOW_BLACK, cellStr)
         }
         if (cell.selection == Selections.CheckerSelected) {
             PrintStr(ANSI_BLACK, ANSI_BG_GREEN, cellStr)
@@ -76,26 +86,73 @@ class IOConsole : IO {
 
     }
 
+    fun ShowBoardRow(cells: Array<Cell>) {
+        for (element in cells) {
+            this.PrinCell(element, CellParts.Top)
+        }
+        println()
+        for (element in cells) {
+            this.PrinCell(element, CellParts.Middle)
+        }
+        println()
+        for (element in cells) {
+            this.PrinCell(element, CellParts.Bottom)
+        }
+        println()
+    }
+
+
     /**
      * Отображает доску.
      *
      * @param board Доска для отображения.
+     * @param isShowColumnsRowsNumbers Показывать номера столбцов и строк или нет.
      */
-    override fun ShowBoard(board: Board) {
-        for (i in 0 until board.GetSize()) {
-            for (j in 0 until board.GetSize()) {
-                this.PrinCell(board.GetCell(i, j), CellParts.Top)
+    override fun ShowBoard(board: Board, isShowColumnsRowsNumbers: Boolean) {
+        var cellsList: ArrayList<Cell> = ArrayList()
+        //region Вывод строки с номерами столбцов
+        if (isShowColumnsRowsNumbers) {
+            for (i in 0..board.GetSize()) {
+                var cell = Cell(-1, -1, Colors.Edge, null, Selections.None)
+                if (i > 0) {
+                    cell.displayContent = (i - 1).toString()
+                }
+                cellsList.add(cell)
             }
-            println()
-            for (j in 0 until board.GetSize()) {
-                this.PrinCell(board.GetCell(i, j), CellParts.Middle)
-            }
-            println()
-            for (j in 0 until board.GetSize()) {
-                this.PrinCell(board.GetCell(i, j), CellParts.Bottom)
-            }
-            println()
+            cellsList.add(Cell(-1, -1, Colors.Edge, null, Selections.None))
+            this.ShowBoardRow(cellsList.toTypedArray())
         }
+        //endregion
+
+        //region Вывод строк игрового поля
+        for (i in 0 until board.GetSize()) {
+            if (isShowColumnsRowsNumbers) {
+                cellsList.clear()
+                var cell = Cell(-1, -1, Colors.Edge, null, Selections.None, i.toString())
+                cellsList.add(cell)
+                cellsList.addAll(board[i])
+                cellsList.add(cell)
+                this.ShowBoardRow(cellsList.toTypedArray())
+            } else {
+                this.ShowBoardRow(board[i])
+            }
+        }
+        //endregion
+
+        //region Вывод строки с номерами столбцов
+        if (isShowColumnsRowsNumbers) {
+            cellsList.clear()
+            for (i in 0..board.GetSize()) {
+                var cell = Cell(-1, -1, Colors.Edge, null, Selections.None, " ")
+                if (i > 0) {
+                    cell.displayContent = (i - 1).toString()
+                }
+                cellsList.add(cell)
+            }
+            cellsList.add(Cell(-1, -1, Colors.Edge, null, Selections.None, " "))
+            this.ShowBoardRow(cellsList.toTypedArray())
+        }
+        //endregion
     }
 
     fun PrintStr(textColor: String, backgroundColor: String, text: String) {

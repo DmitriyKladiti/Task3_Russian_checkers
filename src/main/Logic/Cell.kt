@@ -6,7 +6,8 @@ class Cell(
     val column: Int = 0,
     val color: Colors = Colors.White,
     var checker: Checker? = null,
-    var selection: Selections = Selections.None
+    var selection: Selections = Selections.None,
+    var displayContent: String? = null
 ) {
     fun SetChecker(checker: Checker?) {
         this.checker = checker
@@ -19,6 +20,8 @@ class Cell(
         } else {
             if (this.color == Colors.White)
                 return "_"
+            if (this.color == Colors.Edge)
+                return "E"
             return "#"
         }
     }

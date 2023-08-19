@@ -27,6 +27,7 @@ interface IO {
      * Отображает доску.
      *
      * @param board Доска для отображения.
+     * @param isShowColumnsRowsNumbers Показывать номера столбцов и строк или нет.
      */
-    fun ShowBoard(board: Board)
+    fun ShowBoard(board: Board, isShowColumnsRowsNumbers: Boolean)
 }
