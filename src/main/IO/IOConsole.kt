@@ -1,18 +1,30 @@
+import java.util.*
+import kotlin.collections.ArrayList
+
+//region Цвет текста
 val ANSI_RESET = "\u001B[0m"
 val ANSI_BLACK = "\u001B[30m"
-val ANSI_BROWN = "\u001B[33m"
-
-val ANSI_WHITE = "\u001B[37m"
 val ANSI_RED = "\u001B[31m"
 val ANSI_GREEN = "\u001B[32m"
-val ANSI_LIGHT_CYAN = "\u001B[36m"
+val ANSI_YELLOW = "\u001B[33m"
+val ANSI_BLUE = "\u001B[34m"
+val ANSI_PURPLE = "\u001B[35m"
+val ANSI_CYAN = "\u001B[36m"
+val ANSI_WHITE = "\u001B[37m"
+//endregion
+
+//region Цвет фона
+val ANSI_BG_BLACK = "\u001B[40m"
 val ANSI_BG_RED = "\u001B[41m"
 val ANSI_BG_GREEN = "\u001B[42m"
-val ANSI_BG_GREEN_BROWN = "\u001B[42;33m"
-val ANSI_BG_LIGHT_CYAN = "\u001B[46m"
-val ANSI_BG_WHITE = "\u001B[47m";
-val ANSI_BG_BLACK = "\u001B[40m"
 val ANSI_BG_YELLOW_BLACK = "\u001B[43;30m"
+val ANSI_BG_YELLOW = "\u001B[43m"
+val ANSI_BG_BLUE = "\u001B[44m"
+val ANSI_BG_PURPLE = "\u001B[45m"
+val ANSI_BG_CYAN = "\u001B[46m"
+val ANSI_BG_WHITE = "\u001B[47m"
+
+//endregion
 
 
 class IOConsole : IO {
@@ -26,21 +38,47 @@ class IOConsole : IO {
     }
 
     /**
+     * Запрашивает у пользователя целое число через консоль.
+     * В случае ввода некорректного значения, метод повторно запрашивает число.
+     *
+     * @return Введенное пользователем целое число.
+     */
+    override fun GetInt(): Int {
+        try {
+//            print("Введите целое число: ")
+            return readln().toInt()
+        } catch (e: NumberFormatException) {
+            this.Show("Это не целое число. Попробуйте еще раз.")
+            return this.GetInt()
+        }
+
+    }
+
+    /**
      * Получает координаты.
      *
      * @return Пара координат (x, y).
      */
     override fun GetCoordinates(): Pair<Int, Int> {
-        TODO("Not yet implemented")
+        // Запрашиваем строку у пользователя
+        Show("Введите номер строки: ")
+        val row = this.GetInt()
+
+        // Запрашиваем столбец у пользователя
+        Show("Введите номер столбца: ")
+        val column = this.GetInt()
+
+        return Pair(row, column)
     }
+
 
     /**
      * Отображает сообщение.
      *
      * @param message Сообщение для отображения.
      */
-    override fun ShowMessage(message: String) {
-        TODO("Not yet implemented")
+    override fun Show(message: String) {
+        println(message)
     }
 
     private fun PrinCell(cell: Cell, part: CellParts) {
@@ -80,10 +118,13 @@ class IOConsole : IO {
             PrintStr(ANSI_BLACK, ANSI_BG_GREEN, cellStr)
         }
         if (cell.selection == Selections.AvailableMove) {
-            PrintStr(ANSI_BLACK, ANSI_BG_LIGHT_CYAN, cellStr)
+            PrintStr(ANSI_BLACK, ANSI_BG_CYAN, cellStr)
         }
         if (cell.selection == Selections.AvailableBeat) {
             PrintStr(ANSI_BLACK, ANSI_BG_RED, cellStr)
+        }
+        if (cell.selection == Selections.AvailableCheckerToBeat) {
+            PrintStr(ANSI_WHITE, ANSI_BG_PURPLE, cellStr)
         }
         //endregion
 
@@ -104,6 +145,22 @@ class IOConsole : IO {
         println()
     }
 
+    fun clearConsole() {
+        try {
+            val os = System.getProperty("os.name").lowercase(Locale.getDefault())
+            print("\u001B[H\u001B[2J")
+            System.out.flush()
+
+            if (os.contains("win")) {
+                ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor()
+            } else {
+                ProcessBuilder("clear").inheritIO().start().waitFor()
+            }
+        } catch (e: Exception) {
+            // Обработка исключения, если что-то пошло не так
+        }
+    }
+
 
     /**
      * Отображает доску.
@@ -111,7 +168,8 @@ class IOConsole : IO {
      * @param board Доска для отображения.
      * @param isShowColumnsRowsNumbers Показывать номера столбцов и строк или нет.
      */
-    override fun ShowBoard(board: Board, isShowColumnsRowsNumbers: Boolean) {
+    override fun Show(board: Board, isShowColumnsRowsNumbers: Boolean) {
+//        this.clearConsole()
         var cellsList: ArrayList<Cell> = ArrayList()
         //region Вывод строки с номерами столбцов
         if (isShowColumnsRowsNumbers) {

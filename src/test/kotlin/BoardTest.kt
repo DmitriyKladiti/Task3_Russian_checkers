@@ -391,4 +391,67 @@ class BoardTest {
         assertTrue(expectedMoves.containsAll(availableMoves))
     }
     //endregion
+
+
+    //region Проверка доступных атак
+    @Test
+    fun testGetAvailableBeats_KingChecker_Beats() {
+        val board = Board()
+        val row = 5
+        val column = 4
+        board.RemoveCheckers()
+
+        // Размещаем дамку на доске
+        board.AddChecker(row, column, Checker(row, column, Colors.Black, CheckerType.King))
+
+        // Размещаем шашки противника на доске для проверки возможных атак
+        board.AddChecker(4, 3, Checker(4, 3, Colors.White, CheckerType.Checker))
+        board.AddChecker(6, 5, Checker(6, 5, Colors.White, CheckerType.Checker))
+
+        val availableBeats = board.GetAvailableBeats(row, column)
+
+        // Здесь укажите ожидаемые координаты всех доступных атак для дамки
+        val expectedBeats = listOf(
+            Pair(3, 2), // Атака вверх-влево после шашки на 4,3
+            Pair(7, 6),  // Атака вниз-вправо после шашки на 6,5
+            Pair(2, 1),
+            Pair(1, 0)
+        )
+
+        assertEquals(expectedBeats.size, availableBeats.size)
+        assertTrue(expectedBeats.containsAll(availableBeats))
+    }
+
+    @Test
+    fun testGetAvailableBeats_NormalChecker_Beats() {
+        val board = Board()
+        val row = 5
+        val column = 4
+        board.RemoveCheckers()
+
+        // Размещаем обычную шашку на доске
+        board.AddChecker(row, column, Checker(row, column, Colors.Black, CheckerType.Checker))
+
+        // Размещаем шашки противника на доске для проверки возможных атак
+        board.AddChecker(4, 3, Checker(4, 3, Colors.White, CheckerType.Checker))
+        board.AddChecker(4, 5, Checker(4, 5, Colors.White, CheckerType.Checker))
+        board.AddChecker(6, 3, Checker(6, 3, Colors.White, CheckerType.Checker))
+        board.AddChecker(6, 5, Checker(6, 5, Colors.White, CheckerType.Checker))
+
+
+        val availableBeats = board.GetAvailableBeats(row, column)
+
+        // Ожидаемые координаты всех доступных атак для обычной шашки
+        val expectedBeats = listOf(
+            Pair(3, 2),  // Атака вверх-влево после шашки на 4,3
+            Pair(3, 6),  // Атака вверх-вправо после шашки на 4,5
+            Pair(7, 2),  // Атака вниз-влево после шашки на 6,3
+            Pair(7, 6)   // Атака вниз-вправо после шашки на 6,5
+        )
+
+        assertEquals(expectedBeats, availableBeats)
+        assertTrue(expectedBeats.containsAll(availableBeats))
+    }
+
+    //endregion
 }

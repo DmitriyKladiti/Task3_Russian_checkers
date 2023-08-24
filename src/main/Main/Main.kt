@@ -9,7 +9,7 @@ fun SetCheckers(board: Board, coords: List<Pair<Int, Int>>, color: Colors, type:
     }
 }
 
-fun main(args: Array<String>) {
+fun TestCheckersMoves() {
     var io = IOConsole()
     var board = Board()
     board.RemoveCheckers()
@@ -19,8 +19,8 @@ fun main(args: Array<String>) {
 //        Pair(1, 6)
     )
     val whiteCheckerCoordinates = listOf(
-        Pair(6, 5),
-        Pair(6, 3),
+//        Pair(6, 5),
+//        Pair(6, 3),
         Pair(4, 3),
         Pair(4, 5)
 //        Pair(1, 2)
@@ -31,6 +31,11 @@ fun main(args: Array<String>) {
     board.SelectChecker(5, 4)
 //    board.SelectChecker(1, 6)
 //    board.SelectChecker(1, 2)
-    io.ShowBoard(board, true)
+    io.Show(board, true)
+}
+
+fun main(args: Array<String>) {
+    var game = Game(IOConsole())
+    game.Start()
 
 }

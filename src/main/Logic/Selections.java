@@ -17,5 +17,9 @@ public enum Selections {
     /**
      * На даннукю клетку может походить шашка, после взятия шашки соперника
      */
-    AvailableBeat
+    AvailableBeat,
+    /**
+     * Этой шашкой можно побить другие шашки
+     */
+    AvailableCheckerToBeat
 }

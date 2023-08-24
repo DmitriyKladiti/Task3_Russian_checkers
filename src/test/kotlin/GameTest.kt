@@ -8,7 +8,7 @@ class GameTest {
 
     @BeforeEach
     fun setUp() {
-        game = Game()
+        game = Game(IOConsole())
     }
 
     @Test

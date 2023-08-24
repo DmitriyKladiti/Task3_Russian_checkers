@@ -120,37 +120,45 @@ class Board {
         return availableMoves
     }
 
+    /**
+     * Возвращает список доступных для атаки клеток для шашки или дамки.
+     *
+     * @param row Текущая строка шашки или дамки.
+     * @param column Текущая колонка шашки или дамки.
+     * @return Список доступных для атаки клеток в формате Pair(row, column).
+     */
     fun GetAvailableBeats(row: Int, column: Int): List<Pair<Int, Int>> {
         val availableBeats = mutableListOf<Pair<Int, Int>>()
+
         val cell = GetCell(row, column)
         val checker = cell.checker ?: return emptyList()
 
-        val directions = if (checker.type == CheckerType.King) {
-            (-7..7).flatMap { rowDelta ->
-                (-7..7).map { colDelta ->
-                    Pair(rowDelta, colDelta)
-                }
-            }
-        } else {
-            listOf(Pair(-1, -1), Pair(-1, 1), Pair(1, -1), Pair(1, 1))
-        }
-
+        val directions = listOf(Pair(-1, -1), Pair(-1, 1), Pair(1, -1), Pair(1, 1))
 
         for ((rowDelta, colDelta) in directions) {
-            val captureRow = row + rowDelta * 2
-            val captureColumn = column + colDelta * 2
-            val landingRow = row + rowDelta
-            val landingColumn = column + colDelta
+            var steps = 1
+            var hasEncounteredEnemyChecker = false
 
-            if (CheckCoordinate(captureRow, captureColumn) && CheckCoordinate(landingRow, landingColumn)) {
-                val captureCell = GetCell(captureRow, captureColumn)
-                val captureChecker = captureCell.checker
-                val landingCell = GetCell(landingRow, landingColumn)
-                val landingChecker = landingCell.checker
+            while (true) {
+                val currentRow = row + rowDelta * steps
+                val currentColumn = column + colDelta * steps
 
-                if (captureChecker == null && landingChecker != null && landingChecker.color != checker.color) {
-                    availableBeats.add(Pair(captureRow, captureColumn))
+                if (!CheckCoordinate(currentRow, currentColumn)) break
+
+                val currentCell = GetCell(currentRow, currentColumn)
+                val currentChecker = currentCell.checker
+
+                if (currentChecker != null) {
+                    if (checker.color == currentChecker.color) break
+                    if (hasEncounteredEnemyChecker) break
+                    hasEncounteredEnemyChecker = true
+                } else {
+                    if (hasEncounteredEnemyChecker) {
+                        availableBeats.add(Pair(currentRow, currentColumn))
+                    }
+                    if (checker.type == CheckerType.Checker) break
                 }
+                steps++
             }
         }
 
@@ -238,6 +246,39 @@ class Board {
         cellTo.SetChecker(cellFrom.checker!!)
         cellFrom.SetChecker(null)
     }
+
+    fun GetCheckersBetween(rowFrom: Int, columnFrom: Int, rowTo: Int, columnTo: Int):
+            List<Checker> {
+        val checkersBetween = mutableListOf<Checker>()
+
+        val dRow = when {
+            rowTo > rowFrom -> 1
+            rowTo < rowFrom -> -1
+            else -> 0
+        }
+
+        val dCol = when {
+            columnTo > columnFrom -> 1
+            columnTo < columnFrom -> -1
+            else -> 0
+        }
+
+        var currentRow = rowFrom + dRow
+        var currentCol = columnFrom + dCol
+
+        while (currentRow != rowTo || currentCol != columnTo) {
+            val cell = this.GetCell(currentRow, currentCol)
+            cell.checker?.let {
+                checkersBetween.add(it)
+            }
+
+            currentRow += dRow
+            currentCol += dCol
+        }
+
+        return checkersBetween
+    }
+
 
     /**
      * Удаляет шашку с указанными координатами
