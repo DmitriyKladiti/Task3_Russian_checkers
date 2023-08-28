@@ -1,8 +1,6 @@
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.io.Serializable
-import java.util.*
-import kotlin.collections.ArrayList
 
 //region Цвет текста
 val ANSI_RESET = "\u001B[0m"
@@ -89,11 +87,12 @@ class IOConsole(override val isReady: Boolean = true) : IO, Serializable {
      *
      * @param options Список єлементов для вывода на экран.
      */
-    override fun Show(options: List<String>) {
-        Show("Выберите один из пунктов:")
+    override fun Show(menuTitle: String, options: List<String>) {
+        this.Show(menuTitle)
         for ((index, option) in options.withIndex()) {
             println("${index + 1}. $option")
         }
+        Show("Выберите один из пунктов:")
     }
 
     private fun PrinCell(cell: Cell, part: CellParts) {
@@ -220,7 +219,7 @@ class IOConsole(override val isReady: Boolean = true) : IO, Serializable {
      */
     override fun ShowMainMenu(): Commands {
         val menuOptions = listOf("Новая игра", "Загрузить игру", "Выход")
-        Show(menuOptions)
+        Show("Главное меню", menuOptions)
         var index = this.GetInt() - 1
         if (index < 0 || index >= menuOptions.size) {
             Show("Указан некорректный индекс!")
@@ -236,19 +235,19 @@ class IOConsole(override val isReady: Boolean = true) : IO, Serializable {
     }
 
     /**
-     * Выводит меню хода (показывается пере ходом игрока) на экран.
+     * Выводит меню хода (показывается перед ходом игрока) на экран.
      *
      */
     override fun ShowMoveMenu(): Commands {
         val menuOptions = listOf("Сделать ход", "Сохранить игру", "Загрузить игру", "Выход")
-        Show(menuOptions)
+        Show("Меню действия", menuOptions)
         var index = this.GetInt() - 1
         if (index < 0 || index >= menuOptions.size) {
             Show("Указан некорректный индекс!")
             return this.ShowMainMenu()
         }
         if (menuOptions[index] == "Сделать ход")
-            return Commands.GetCoordinate
+            return Commands.MakeMove
         if (menuOptions[index] == "Сохранить игру")
             return Commands.Save
         if (menuOptions[index] == "Загрузить игру")

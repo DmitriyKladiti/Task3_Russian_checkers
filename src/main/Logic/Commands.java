@@ -13,6 +13,7 @@
  *     <li>{@link #GetCoordinate} - для получения координат от пользователя.</li>
  *     <li>{@link #GetCell} - для получения ячейки по определенным координатам.</li>
  *     <li>{@link #GetChecker} - для получения шашки по определенным координатам.</li>
+ *     <li>{@link #MakeMove} - сделать ход шашкой..</li>
  * </ul>
  */
 public enum Commands {
@@ -59,5 +60,9 @@ public enum Commands {
     /**
      * Получить шашку по определенным координатам.
      */
-    GetChecker
+    GetChecker,
+    /**
+     * Сделать ход шашкой.
+     */
+    MakeMove
 }

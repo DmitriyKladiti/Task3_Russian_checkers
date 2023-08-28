@@ -42,7 +42,7 @@ interface IO {
      *
      * @param options Список єлементов для вывода на экран.
      */
-    fun Show(options: List<String>)
+    fun Show(menuTitle: String, options: List<String>)
 
     /**
      * Выводит главное меню на экран.
@@ -62,5 +62,5 @@ interface IO {
      * @param board Доска для отображения.
      * @param isShowColumnsRowsNumbers Показывать номера столбцов и строк или нет.
      */
-    fun Show(board: Board, isShowColumnsRowsNumbers: Boolean)
+    fun Show(board: Board, isShowColumnsRowsNumbers: Boolean = true)
 }
