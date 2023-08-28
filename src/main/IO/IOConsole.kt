@@ -1,3 +1,6 @@
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
+import java.io.Serializable
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -27,7 +30,7 @@ val ANSI_BG_WHITE = "\u001B[47m"
 //endregion
 
 
-class IOConsole : IO {
+class IOConsole(override val isReady: Boolean = true) : IO, Serializable {
     /**
      * Получает строку.
      *
@@ -79,6 +82,18 @@ class IOConsole : IO {
      */
     override fun Show(message: String) {
         println(message)
+    }
+
+    /**
+     * Выводит список на экран.
+     *
+     * @param options Список єлементов для вывода на экран.
+     */
+    override fun Show(options: List<String>) {
+        Show("Выберите один из пунктов:")
+        for ((index, option) in options.withIndex()) {
+            println("${index + 1}. $option")
+        }
     }
 
     private fun PrinCell(cell: Cell, part: CellParts) {
@@ -145,23 +160,6 @@ class IOConsole : IO {
         println()
     }
 
-    fun clearConsole() {
-        try {
-            val os = System.getProperty("os.name").lowercase(Locale.getDefault())
-            print("\u001B[H\u001B[2J")
-            System.out.flush()
-
-            if (os.contains("win")) {
-                ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor()
-            } else {
-                ProcessBuilder("clear").inheritIO().start().waitFor()
-            }
-        } catch (e: Exception) {
-            // Обработка исключения, если что-то пошло не так
-        }
-    }
-
-
     /**
      * Отображает доску.
      *
@@ -216,8 +214,60 @@ class IOConsole : IO {
         //endregion
     }
 
+    /**
+     * Выводит главное меню на экран.
+     *
+     */
+    override fun ShowMainMenu(): Commands {
+        val menuOptions = listOf("Новая игра", "Загрузить игру", "Выход")
+        Show(menuOptions)
+        var index = this.GetInt() - 1
+        if (index < 0 || index >= menuOptions.size) {
+            Show("Указан некорректный индекс!")
+            return this.ShowMainMenu()
+        }
+        if (menuOptions[index] == "Новая игра")
+            return Commands.Start
+        if (menuOptions[index] == "Загрузить игру")
+            return Commands.Load
+        if (menuOptions[index] == "Выход")
+            return Commands.Exit
+        throw IllegalStateException("Неизвестная команда")
+    }
+
+    /**
+     * Выводит меню хода (показывается пере ходом игрока) на экран.
+     *
+     */
+    override fun ShowMoveMenu(): Commands {
+        val menuOptions = listOf("Сделать ход", "Сохранить игру", "Загрузить игру", "Выход")
+        Show(menuOptions)
+        var index = this.GetInt() - 1
+        if (index < 0 || index >= menuOptions.size) {
+            Show("Указан некорректный индекс!")
+            return this.ShowMainMenu()
+        }
+        if (menuOptions[index] == "Сделать ход")
+            return Commands.GetCoordinate
+        if (menuOptions[index] == "Сохранить игру")
+            return Commands.Save
+        if (menuOptions[index] == "Загрузить игру")
+            return Commands.Load
+        if (menuOptions[index] == "Выход")
+            return Commands.Exit
+        throw IllegalStateException("Неизвестная команда")
+    }
+
     fun PrintStr(textColor: String, backgroundColor: String, text: String) {
         val coloredText = "$backgroundColor$textColor$text$ANSI_RESET$ANSI_WHITE"
         print(coloredText)
+    }
+
+    private fun writeObject(out: ObjectOutputStream) {
+        out.defaultWriteObject()
+    }
+
+    private fun readObject(`in`: ObjectInputStream) {
+        `in`.defaultReadObject()
     }
 }

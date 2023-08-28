@@ -1,3 +1,8 @@
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
+
 fun SetChecker(board: Board, row: Int, column: Int, color: Colors, type: CheckerType) {
     val cell = board.GetCell(row, column)
     cell.checker = Checker(row, column, color, type)
@@ -34,8 +39,14 @@ fun TestCheckersMoves() {
     io.Show(board, true)
 }
 
+
 fun main(args: Array<String>) {
     var game = Game(IOConsole())
+    val filePath = "game.ser"
+    // Сохранение игры в файл
+    game.Save(filePath)
+    // Загрузка игры из файла
+    val loadedGame = game.Load(filePath)
     game.Start()
 
 }

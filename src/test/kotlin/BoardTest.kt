@@ -392,7 +392,6 @@ class BoardTest {
     }
     //endregion
 
-
     //region Проверка доступных атак
     @Test
     fun testGetAvailableBeats_KingChecker_Beats() {

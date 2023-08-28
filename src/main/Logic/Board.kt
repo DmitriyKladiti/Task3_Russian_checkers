@@ -1,11 +1,12 @@
-import java.lang.Exception
-import java.lang.IllegalArgumentException
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
+import java.io.Serializable
 
 @Suppress("FunctionName")
 /**
  * Класс игровой доски
  */
-class Board {
+class Board : Serializable {
     private val size: Int = 8
     private val cells: Array<Array<Cell>> = Array(size) { i ->
         Array(size) { j ->
@@ -354,6 +355,33 @@ class Board {
     }
     //endregion
 
+    fun Copy(): Board {
+        val newBoard = Board()
+        for (i in 0 until size) {
+            for (j in 0 until size) {
+                val cell = this.cells[i][j]
+                newBoard.cells[i][j] = Cell(cell.row, cell.column, cell.color)
+                if (cell.checker != null) {
+                    newBoard.cells[i][j].checker = Checker(
+                        cell.checker!!.row,
+                        cell.checker!!.column,
+                        cell.checker!!.color,
+                        cell.checker!!.type,
+                    )
+
+                }
+            }
+        }
+        return newBoard
+    }
+
+    private fun writeObject(out: ObjectOutputStream) {
+        out.defaultWriteObject()
+    }
+
+    private fun readObject(`in`: ObjectInputStream) {
+        `in`.defaultReadObject()
+    }
 
     /**
      * Возвращает строковое представление игровой доски
@@ -369,9 +397,36 @@ class Board {
         }
         return builder.toString()
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Board) return false
+
+        if (size != other.size) return false
+
+        for (i in 0 until size) {
+            for (j in 0 until size) {
+                if (cells[i][j] != other.cells[i][j]) {
+                    return false
+                }
+            }
+        }
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = size
+        for (row in cells) {
+            for (cell in row) {
+                result = 31 * result + (cell?.hashCode() ?: 0)
+            }
+        }
+        return result
+    }
     //endregion
 
-    //region Операторі
+    //region Операторы
     operator fun get(row: Int, column: Int): Cell {
         return GetCell(row, column)
     }
