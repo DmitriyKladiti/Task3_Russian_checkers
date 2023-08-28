@@ -18,7 +18,7 @@ class Game(private val io: IO) : Serializable {
     //endregion
 
     //region Геттеры
-    fun GetIsStarted():Boolean{
+    fun GetIsStarted(): Boolean {
         return this.isStarted
     }
 
@@ -58,7 +58,7 @@ class Game(private val io: IO) : Serializable {
     }
 
     fun SelectChecker(row: Int, column: Int) {
-
+        this.board.SelectChecker(row, column)
 
     }
 
@@ -66,18 +66,15 @@ class Game(private val io: IO) : Serializable {
         //this.board.MoveChecker()
     }
 
-    fun GetChecker(row: Int, column: Int, player: Player): Checker {
+    private fun GetChecker(row: Int, column: Int, player: Player): Checker {
         // Проверка координат
         if (!board.CheckCoordinate(row, column)) {
             throw IllegalArgumentException("Координаты за пределами доски!")
         }
 
-        val checker = board.GetCell(row, column).checker
+        val checker = board.GetCell(row, column).checker ?: throw IllegalStateException("На данной клетке нет шашки!")
 
         // Проверка наличия шашки
-        if (checker == null) {
-            throw IllegalStateException("На данной клетке нет шашки!")
-        }
 
         // Проверка соответствия цвета
         if (checker.color != player.color) {
@@ -89,18 +86,18 @@ class Game(private val io: IO) : Serializable {
 
     private fun GetChecker(): Checker {
         io.Show("Выберите шашку")
-        var cords = io.GetCoordinates()
-        try {
-            return this.GetChecker(cords.first, cords.second, this.GetCurrentPlayer())
+        val cords = io.GetCoordinates()
+        return try {
+            this.GetChecker(cords.first, cords.second, this.GetCurrentPlayer())
         } catch (e: Exception) {
             e.message?.let { this.io.Show(it) }
-            return GetChecker()
+            GetChecker()
         }
     }
 
     fun Start() {
 
-        var command = io.ShowMainMenu()
+        val command = io.ShowMainMenu()
         this.ExecuteCommand(command)
         if (this.isStarted) {
             io.Show("Ход игрока ${this.GetCurrentPlayer()}")
@@ -111,34 +108,34 @@ class Game(private val io: IO) : Serializable {
                 this.currentChecker = this.GetChecker()
                 board.SelectChecker(this.currentChecker!!.row, this.currentChecker!!.column)
             } else {
-                var availableMoves =
+                val availableMoves =
                     this.board.GetAvailableMoves(this.currentChecker!!.row, this.currentChecker!!.column)
                 var availableBeats =
                     this.board.GetAvailableBeats(this.currentChecker!!.row, this.currentChecker!!.column)
                 this.io.Show("Куда поставить шашку?")
-                var coords = this.io.GetCoordinates()
-                if (availableMoves.contains(coords)) {
+                val cords = this.io.GetCoordinates()
+                if (availableMoves.contains(cords)) {
                     // Координаты содержатся в списке доступных ходов
                     this.board.MoveChecker(
                         this.currentChecker!!.row, this.currentChecker!!.column,
-                        coords.first, coords.second
+                        cords.first, cords.second
                     )
                     this.currentChecker = null
                     this.GetNextPlayer()
                     this.board.UnselectAll()
-                } else if (availableBeats.contains(coords)) {
-                    var beatCheckers = this.board.GetCheckersBetween(
+                } else if (availableBeats.contains(cords)) {
+                    val beatCheckers = this.board.GetCheckersBetween(
                         this.currentChecker!!.row, this.currentChecker!!.column,
-                        coords.first, coords.second
+                        cords.first, cords.second
                     )
                     this.board.MoveChecker(
                         this.currentChecker!!.row, this.currentChecker!!.column,
-                        coords.first, coords.second
+                        cords.first, cords.second
                     )
                     for (checkers in beatCheckers) {
                         this.board.RemoveChecker(checkers.row, checkers.column)
                     }
-                    currentChecker = this.board.GetCell(coords.first, coords.second).checker
+                    currentChecker = this.board.GetCell(cords.first, cords.second).checker
                     availableBeats = this.board.GetAvailableBeats(
                         this.currentChecker!!.row, this.currentChecker!!.column
                     )
@@ -170,13 +167,13 @@ class Game(private val io: IO) : Serializable {
         }
         if (command == Commands.Save) {
             io.Show("Введите путь до файла")
-            var filePath = io.GetStr();
-            this.Save(filePath);
+            val filePath = io.GetStr()
+            this.Save(filePath)
         }
         if (command == Commands.Load) {
             io.Show("Введите путь до файла")
-            var filePath = io.GetStr();
-            this.Load(filePath);
+            val filePath = io.GetStr()
+            this.Load(filePath)
         }
     }
 
