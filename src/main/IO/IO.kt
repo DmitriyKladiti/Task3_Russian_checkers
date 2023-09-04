@@ -2,11 +2,35 @@
  * Интерфейс для ввода-вывода.
  */
 interface IO {
+
+    //region Поля
     /**
      * Готов интерфейс или нет для отправки данных.
      *
      */
     val isReady: Boolean
+
+    /**
+     * Выбранные пользователем клетки
+     */
+    var selectedCellsList: ArrayList<Pair<Int, Int>>
+
+    /**
+     * Текущее сообщение
+     */
+    var currentMessage: String
+    //endregion
+
+    //region Методы
+
+    /**
+     * Добавляет выбранную клетку в список выбранных клеток на основе указанных координат.
+     *
+     * @param rowTo    Ряд, в который необходимо добавить выбранную клетку.
+     * @param columnTo Столбец, в который необходимо добавить выбранную клетку.
+     */
+    fun AddSelectedCell(rowTo: Int, columnTo: Int)
+
 
     /**
      * Получает строку.
@@ -38,29 +62,12 @@ interface IO {
     fun Show(message: String)
 
     /**
-     * Выводит список на экран.
-     *
-     * @param options Список єлементов для вывода на экран.
-     */
-    fun Show(menuTitle: String, options: List<String>)
-
-    /**
-     * Выводит главное меню на экран.
-     *
-     */
-    fun ShowMainMenu(): Commands
-
-    /**
-     * Выводит меню хода (показывается пере ходом игрока) на экран.
-     *
-     */
-    fun ShowMoveMenu(): Commands
-
-    /**
      * Отображает доску.
      *
      * @param board Доска для отображения.
      * @param isShowColumnsRowsNumbers Показывать номера столбцов и строк или нет.
      */
-    fun Show(board: Board, isShowColumnsRowsNumbers: Boolean = true)
+    fun Show(board: Board, isShowColumnsRowsNumbers: Boolean = true): Any?
+    //endregion
+
 }
