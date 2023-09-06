@@ -8,7 +8,7 @@ interface IO {
      * Готов интерфейс или нет для отправки данных.
      *
      */
-    val isReady: Boolean
+    var isReady: Boolean
 
     /**
      * Выбранные пользователем клетки
@@ -16,12 +16,22 @@ interface IO {
     var selectedCellsList: ArrayList<Pair<Int, Int>>
 
     /**
-     * Текущее сообщение
+     * Объект, отчевающий за логику игры
      */
-    var currentMessage: String
+    var game: Game
+
+    /**
+     * Текущая команда на выполнение
+     */
+    var currentCommand: Commands
     //endregion
 
     //region Методы
+
+    fun ExecuteCommand(command: Commands)
+
+    fun Start()
+
 
     /**
      * Добавляет выбранную клетку в список выбранных клеток на основе указанных координат.
@@ -67,7 +77,7 @@ interface IO {
      * @param board Доска для отображения.
      * @param isShowColumnsRowsNumbers Показывать номера столбцов и строк или нет.
      */
-    fun Show(board: Board, isShowColumnsRowsNumbers: Boolean = true): Any?
+    fun Show(board: Board, isShowColumnsRowsNumbers: Boolean = true)
     //endregion
 
 }
