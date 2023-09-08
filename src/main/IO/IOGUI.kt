@@ -2,12 +2,17 @@ import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.GridLayout
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
+import java.io.File
 import java.io.Serializable
 import javax.swing.*
+import javax.swing.filechooser.FileNameExtensionFilter
 
 class IOGUI : IO, Serializable {
 
     //region Поля
+    var isDebug: Boolean = false
     override var isReady: Boolean
 
     /**
@@ -27,8 +32,6 @@ class IOGUI : IO, Serializable {
     private var fMain: JFrame
     private var pMain: JPanel
     private val lblStatus: JLabel
-
-    private var counter: Int = 0
     //endregion
 
     //region Конструкторы
@@ -107,60 +110,113 @@ class IOGUI : IO, Serializable {
     //region Методы
 
     override fun ExecuteCommand(command: Commands) {
-        this.currentCommand = command
-        this.Show(this.currentCommand.toString())
-        if (command == Commands.Start) {
-            this.Show("Игра началась!")
-            this.game.SetIsStarted(true)
-        }
-        if (command == Commands.Exit) {
-            this.game.SetIsStarted(false)
-        }
-        if (command == Commands.Save) {
-            this.Show("Введите путь до файла")
-            val filePath = this.GetStr()
-            this.game.Save(filePath)
-        }
-        if (command == Commands.Load) {
-            this.Show("Введите путь до файла")
-            val filePath = this.GetStr()
-            this.game.Load(filePath)
-        }
-        if (command == Commands.GetCoordinate) {
-            //io.Show("Введите координаты")
-            //return io.GetCoordinates()
-        }
-        if (command == Commands.GetCell) {
+        try {
+            //this.currentCommand = command
+            this.ShowDebug("execute command" + command.toString())
+            if (command == Commands.Start) {
+                this.Show("Игра началась!")
+                this.game = Game()
+                this.game.SetIsStarted(true)
+                this.SetCurrentCommand(Commands.ShowBoard)
+            }
+            if (command == Commands.Exit) {
+                this.game.SetIsStarted(false)
+            }
+            if (command == Commands.Save) {
+                val fileChooser = JFileChooser()
+                fileChooser.dialogTitle = "Сохранить файл"
+                // Устанавливаем рабочий стол в качестве начальной директории
+                val desktopPath = System.getProperty("user.home") + File.separator + "Desktop"
+                fileChooser.currentDirectory = File(desktopPath)
+                // Опционально: Если вы хотите, чтобы пользователь мог выбирать только определенные типы файлов, установите фильтр
+                val filter = FileNameExtensionFilter("Текстовые файлы", "txt")
+                fileChooser.fileFilter = filter
+
+                val userSelection = fileChooser.showSaveDialog(null)
+
+                if (userSelection == JFileChooser.APPROVE_OPTION) {
+                    var fileToSave = fileChooser.selectedFile
+
+                    // Проверка на наличие расширения ".txt"
+                    if (!fileToSave.absolutePath.endsWith(".txt")) {
+                        fileToSave = File(fileToSave.absolutePath + ".txt")
+                    }
+
+                    this.game.Save(fileToSave.absolutePath)
+                }
+                this.SetCurrentCommand(Commands.ShowBoard)
+            }
+            if (command == Commands.Load) {
+                val fileChooser = JFileChooser()
+                fileChooser.dialogTitle = "Открыть файл"
+                // Устанавливаем рабочий стол в качестве начальной директории
+                val desktopPath = System.getProperty("user.home") + File.separator + "Desktop"
+                fileChooser.currentDirectory = File(desktopPath)
+                // Опционально: Если вы хотите, чтобы пользователь мог выбирать только определенные типы файлов, установите фильтр
+                val filter = FileNameExtensionFilter("Текстовые файлы", "txt")
+                fileChooser.fileFilter = filter
+
+                val userSelection = fileChooser.showOpenDialog(null)
+
+                if (userSelection == JFileChooser.APPROVE_OPTION) {
+                    val fileToLoad = fileChooser.selectedFile
+                    println("Открыт файл: ${fileToLoad.absolutePath}")
+                    // Теперь вы можете использовать fileToLoad для загрузки данных из вашего файла
+                    this.game.Load(fileToLoad.absolutePath)
+                    this.SetCurrentCommand(Commands.ShowBoard)
+                }
+
+
+            }
+            if (command == Commands.GetCoordinate) {
+                //io.Show("Введите координаты")
+                //return io.GetCoordinates()
+            }
+            if (command == Commands.GetCell) {
 //            io.Show("Введите координаты клетки")
 //            val cord = io.GetCoordinates()
 //            return this.board.GetCell(cord.first, cord.second)
-        }
-        if (command == Commands.GetChecker) {
+            }
+            if (command == Commands.GetChecker) {
 //            io.Show("Введите координаты шашки")
 //            val cord = io.GetCoordinates()
 //            return this.board.GetCell(cord.first, cord.second).checker
-        }
-        if (command == Commands.MakeMove) {
-            //this.MakeMove()
-        }
-        if (command == Commands.ShowBoard) {
-            this.Show("Commands.ShowBoard" + this.counter.toString())
-            this.counter++
-            this.Show(this.game.GetBoard())
+            }
+            if (command == Commands.MakeMove) {
+                if (this.selectedCellsList.size != 2)
+                    throw Exception("Невозможно сделать ход! Не выбрано две клетки на поле!")
+                val checker =
+                    this.game.GetCell(this.selectedCellsList[0].first, this.selectedCellsList[0].second).checker
+                this.game.MakeMove(checker, this.selectedCellsList[1].first, this.selectedCellsList[1].second)
+                this.game.UnSelectAll()
+                this.SetCurrentCommand(Commands.ShowBoard)
+            }
+            if (command == Commands.ShowBoard) {
+                this.Show("Ход игрока ${this.game.GetCurrentPlayer()}")
+                this.game.SelectAvailableBeats(this.game.GetCheckersThatCanBeat())
+                this.Show(this.game.GetBoard())
 
-        }
-        if (command == Commands.SelectChecker) {
-            try {
-                this.Show("Commands.SelectChecker")
+            }
+            if (command == Commands.SelectChecker) {
+                this.game.UnSelectAll()
                 if (this.selectedCellsList.size == 1) {
                     val selectedCell = this.selectedCellsList[0];
                     this.game.SelectChecker(selectedCell.first, selectedCell.second)
-                    //this.SetCurrentCommand(Commands.ShowBoard)
+                    this.SetCurrentCommand(Commands.ShowBoard)
+                    //this.isReady = true
+                    //this.Show(this.game.GetBoard())
                 }
-            } catch (ex: Exception) {
-                ex.message?.let { this.Show(it) }
+
+
+            }
+            if (command == Commands.UnselectAll) {
+                this.selectedCellsList.clear()
+                this.game.UnSelectAll()
+                this.SetCurrentCommand(Commands.ShowBoard)
             }
 
+        } catch (ex: Exception) {
+            ex.message?.let { this.Show(it) }
         }
     }
 
@@ -171,20 +227,21 @@ class IOGUI : IO, Serializable {
             if (this.isReady) {
                 this.ExecuteCommand(this.GetCurrentCommand())
             }
+            Thread.sleep(50);
         }
     }
 
     //region Действия меню
     fun StartNewGame() {
-
+        this.SetCurrentCommand(Commands.Start)
     }
 
     fun LoadGame() {
-
+        this.SetCurrentCommand(Commands.Load)
     }
 
     fun SaveGame() {
-
+        this.SetCurrentCommand(Commands.Save)
     }
 
     fun Exit() {
@@ -243,14 +300,27 @@ class IOGUI : IO, Serializable {
         this.lblStatus.text = message;
     }
 
+    fun ShowDebug(message: String) {
+        if (this.isDebug)
+            this.Show(message)
+    }
+
     //region Отрисовка доски
-    private fun CellClick(button: JButton) {
+    private fun LeftButtonClick(button: JButton) {
         val clickedRow = button.getClientProperty("row") as Int
         val clickedCol = button.getClientProperty("col") as Int
         this.AddSelectedCell(clickedRow, clickedCol)
+        this.ShowDebug("cell clicked " + clickedRow.toString() + clickedCol.toString())
         if (this.GetSelectedCells().size == 1) {
             this.SetCurrentCommand(Commands.SelectChecker)
         }
+        if (this.GetSelectedCells().size == 2) {
+            this.SetCurrentCommand(Commands.MakeMove)
+        }
+    }
+
+    private fun RightButtonClick(button: JButton) {
+        this.SetCurrentCommand(Commands.UnselectAll)
     }
 
     private fun CreateCellButton(cell: Cell): JButton {
@@ -259,9 +329,16 @@ class IOGUI : IO, Serializable {
         button.putClientProperty("col", cell.column)
         button.preferredSize = Dimension(100, 100)  // Установите размер на свое усмотрение
 
-        button.addActionListener {
-            this.CellClick(button)
-        }
+        button.addMouseListener(object : MouseAdapter() {
+            override fun mousePressed(e: MouseEvent) {
+                if (e.button == MouseEvent.BUTTON1) {  // Проверка на левую кнопку мыши
+                    LeftButtonClick(button)
+                } else if (e.button == MouseEvent.BUTTON3) {  // Проверка на правую кнопку мыши
+                    RightButtonClick(button)
+                }
+            }
+        })
+
 
         // Установка изображения на кнопке в зависимости от содержимого клетки
         if (cell.checker != null) {
@@ -296,6 +373,7 @@ class IOGUI : IO, Serializable {
             Selections.AvailableMove -> button.background = Color.CYAN
             Selections.AvailableBeat -> button.background = Color.RED
             Selections.AvailableCheckerToBeat -> button.background = Color.MAGENTA // Или другой цвет
+            Selections.AvailableCellToBeat -> button.background = Color.ORANGE // Или другой цвет
         }
 
         return button

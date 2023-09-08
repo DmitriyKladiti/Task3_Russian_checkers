@@ -52,12 +52,22 @@ class Game : Serializable {
     //endregion
 
     //region Методы
+
+    fun GetCell(row: Int, column: Int): Cell {
+        return this.board.GetCell(row, column)
+    }
+
+    fun UnSelectAll() {
+        this.board.UnselectAll()
+    }
+
     fun GetCurrentPlayer(): Player {
         if (this.playerCurrentIndex < 0 || this.playerCurrentIndex >= this.players.size) {
             throw IndexOutOfBoundsException("Недопустимый индекс текущего игрока: ${this.playerCurrentIndex}")
         }
         return this.players[this.playerCurrentIndex]
     }
+
 
     fun GetNextPlayer(): Player {
         this.playerCurrentIndex++
@@ -82,19 +92,6 @@ class Game : Serializable {
 
         return checker
     }
-
-    private fun GetChecker(): Checker {
-//        io.Show("Выберите шашку")
-//        val cords = io.GetCoordinates()
-//        return try {
-//            this.GetChecker(cords.first, cords.second, this.GetCurrentPlayer())
-//        } catch (e: Exception) {
-//            e.message?.let { this.io.Show(it) }
-//            GetChecker()
-//        }
-        return Checker();
-    }
-
 
     fun Start() {
 //        this.ExecuteCommand(Commands.Start)
@@ -135,46 +132,44 @@ class Game : Serializable {
     }
 
     fun SelectChecker(row: Int, column: Int) {
-        this.board.SelectChecker(row, column)
+        val checker = this.GetChecker(row, column, this.GetCurrentPlayer())
+        this.board.SelectChecker(checker.row, checker.column)
     }
 
-    fun MakeMove() {
-//        var cell: Cell? = null
-//        io.Show("Ход игрока ${this.GetCurrentPlayer()}")
-//
-//        //region Запрос координат шашки
-//        try {
-//            this.currentChecker = this.ExecuteCommand(Commands.GetChecker) as Checker?
-//            if (this.currentChecker == null)
-//                throw Exception("На указанной клетке нет шашки!")
-//            board.SelectChecker(this.currentChecker!!.row, this.currentChecker!!.column)
-//            io.Show(board)
-//        } catch (e: Exception) {
-//            e.message?.let { this.io.Show(it) }
-//            MakeMove()
-//        }
-//        //endregion
-//        //region Запрос координат клетки
-//        try {
-//            cell = this.ExecuteCommand(Commands.GetCell) as Cell?
-//        } catch (e: Exception) {
-//            e.message?.let { this.io.Show(it) }
-//            MakeMove()
-//        }
-//        //endregion
-//        //region Логика хода
-//        if (cell == null)
-//            throw Exception("Не выбрана клетка!")
-//        this.MakeMove(this.currentChecker, cell.row, cell.column)
-//
-//        this.currentChecker = null
-//        this.GetNextPlayer()
-//        this.board.UnselectAll()
-//        io.Show(this.board, true)
-//        //endregion
+    // Метод возвращает список шашек, которые могут бить
+    fun GetCheckersThatCanBeat(): List<Cell> {
+        val checkersToBeat = mutableListOf<Cell>()
+
+        for (i in 0 until this.board.GetSize()) {
+            for (j in 0 until this.board.GetSize()) {
+                val checker = this.board.GetCell(i, j).checker
+                if (checker != null && checker.color == this.GetCurrentPlayer().color) {
+                    val availableBeats = this.board.GetAvailableBeats(i, j)
+                    if (availableBeats.isNotEmpty()) {
+                        checkersToBeat.add(this.GetCell(i, j))
+                    }
+                }
+            }
+        }
+
+        return checkersToBeat
+    }
+    /**
+     * Выделяет клетки для атаки для текущего игрока
+     */
+    fun SelectAvailableBeats(checkers: List<Cell>) {
+        for (checker in checkers) {
+            this.board.SelectCell(checker.row, checker.column, Selections.AvailableCheckerToBeat)
+            val availableBeats = this.board.GetAvailableBeats(checker.row, checker.column)
+            for (cell in availableBeats) {
+                this.board.SelectCell(cell.first, cell.second, Selections.AvailableCellToBeat)
+            }
+        }
     }
 
-    private fun MakeMove(checker: Checker?, rowTo: Int, columnTo: Int) {
+
+
+    fun MakeMove(checker: Checker?, rowTo: Int, columnTo: Int) {
         val availableMoves =
             this.board.GetAvailableMoves(checker!!.row, checker!!.column)
         var availableBeats =
@@ -186,7 +181,7 @@ class Game : Serializable {
                 checker!!.row, checker!!.column,
                 cords.first, cords.second
             )
-
+            this.GetNextPlayer()
         } else if (availableBeats.contains(cords)) {
             val beatCheckers = this.board.GetCheckersBetween(
                 checker!!.row, checker!!.column,
@@ -208,7 +203,7 @@ class Game : Serializable {
             }
         } else {
             // Координаты не содержатся в списке доступных ходов
-            //this.io.Show("Недопустимый ход. Попробуйте снова.")
+            throw Exception("Недопустимый ход. Попробуйте снова.")
         }
     }
 

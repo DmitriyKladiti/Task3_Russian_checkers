@@ -81,6 +81,10 @@ public enum Commands {
     /**
      * Сделать ход шашкой.
      */
-    MakeMove
+    MakeMove,
 
+    /**
+     * Снять выделение со всех клеток
+     */
+    UnselectAll
 }
