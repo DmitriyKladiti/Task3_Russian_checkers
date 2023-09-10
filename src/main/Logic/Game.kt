@@ -11,7 +11,7 @@ class Game : Serializable {
         when (index) {
             0 -> Player("Белый игрок", Colors.White)
             1 -> Player("Черный игрок", Colors.Black)
-            else -> throw IllegalArgumentException("Недопустимый индекс игрока")
+            else -> throw IllegalArgumentException(Strings.Companion.Errors.incorrectPlayerIndex)
         }
     }
     private var board: Board = Board()
@@ -22,6 +22,10 @@ class Game : Serializable {
     //region Сеттеры
     fun SetIsStarted(isStarted: Boolean) {
         this.isStarted = isStarted
+    }
+
+    fun SetBoard(board: Board) {
+        this.board = board
     }
     //endregion
 
@@ -63,7 +67,7 @@ class Game : Serializable {
 
     fun GetCurrentPlayer(): Player {
         if (this.playerCurrentIndex < 0 || this.playerCurrentIndex >= this.players.size) {
-            throw IndexOutOfBoundsException("Недопустимый индекс текущего игрока: ${this.playerCurrentIndex}")
+            throw IndexOutOfBoundsException("${Strings.Companion.Errors.incorrectPlayerIndex}: ${this.playerCurrentIndex}")
         }
         return this.players[this.playerCurrentIndex]
     }
@@ -78,22 +82,24 @@ class Game : Serializable {
     private fun GetChecker(row: Int, column: Int, player: Player): Checker {
         // Проверка координат
         if (!board.CheckCoordinate(row, column)) {
-            throw IllegalArgumentException("Координаты за пределами доски!")
+            throw IllegalArgumentException(Strings.Companion.Errors.cordsOutOfBounds)
         }
 
-        val checker = board.GetCell(row, column).checker ?: throw IllegalStateException("На данной клетке нет шашки!")
+        val checker =
+            board.GetCell(row, column).checker ?: throw IllegalStateException(Strings.Companion.Errors.noCheckerInCell)
 
         // Проверка наличия шашки
 
         // Проверка соответствия цвета
         if (checker.color != player.color) {
-            throw IllegalArgumentException("Цвет шашки не соответствует цвету игрока!")
+            throw IllegalArgumentException(Strings.Companion.Errors.colorPlayerCheckerMismatch)
         }
 
         return checker
     }
 
     fun Start() {
+        this.SetIsStarted(true)
 //        this.ExecuteCommand(Commands.Start)
 //        while (this.isStarted) {
 //            if (io.isReady) {
@@ -133,6 +139,9 @@ class Game : Serializable {
 
     fun SelectChecker(row: Int, column: Int) {
         val checker = this.GetChecker(row, column, this.GetCurrentPlayer())
+        val checkersCanBeat = this.GetCheckersThatCanBeat()
+        if (checkersCanBeat.isNotEmpty() && !checkersCanBeat.contains(this.GetCell(row, column)))
+            throw Exception(Strings.Companion.Errors.notBeatCheckerSelected)
         this.board.SelectChecker(checker.row, checker.column)
     }
 
@@ -154,6 +163,7 @@ class Game : Serializable {
 
         return checkersToBeat
     }
+
     /**
      * Выделяет клетки для атаки для текущего игрока
      */
@@ -167,20 +177,54 @@ class Game : Serializable {
         }
     }
 
+    fun CheckGameOver(): GameResult {
+        // Проверка на количество шашек каждого игрока
+        val whiteCheckers = board.GetCheckersByColor(Colors.White)
+        val blackCheckers = board.GetCheckersByColor(Colors.Black)
 
+        if (whiteCheckers.isEmpty()) {
+            return GameResult.BlackWins
+        }
+
+        if (blackCheckers.isEmpty()) {
+            return GameResult.WhiteWins
+        }
+
+        // Проверка на доступные ходы или атаки для текущего игрока
+        val currentPlayerCheckers = if (this.GetCurrentPlayer().color == Colors.White) whiteCheckers else blackCheckers
+        for (checker in currentPlayerCheckers) {
+            if (board.GetAvailableMoves(checker.row, checker.column).isNotEmpty() ||
+                board.GetAvailableBeats(checker.row, checker.column).isNotEmpty()
+            ) {
+                // Есть доступные ходы или атаки
+                return GameResult.StillPlaying
+            }
+        }
+
+        // Если у текущего игрока нет доступных ходов или атак, другой игрок победил
+        return if (this.GetCurrentPlayer().color == Colors.White) GameResult.BlackWins else GameResult.WhiteWins
+    }
 
     fun MakeMove(checker: Checker?, rowTo: Int, columnTo: Int) {
+        if (checker != null) {
+            if (checker.color != this.GetCurrentPlayer().color)
+                throw Exception(Strings.Companion.Errors.colorPlayerCheckerMismatch)
+            val checkersCanBeat = this.GetCheckersThatCanBeat()
+            if (checkersCanBeat.isNotEmpty() && !checkersCanBeat.contains(this.GetCell(checker.row, checker.column)))
+                throw Exception(Strings.Companion.Errors.notBeatCheckerSelected)
+        }
         val availableMoves =
             this.board.GetAvailableMoves(checker!!.row, checker!!.column)
         var availableBeats =
             this.board.GetAvailableBeats(checker!!.row, checker!!.column)
         val cords = Pair<Int, Int>(rowTo, columnTo)
-        if (availableMoves.contains(cords)) {
+        if (availableMoves.contains(cords) && availableBeats.isEmpty()) {
             // Координаты содержатся в списке доступных ходов
             this.board.MoveChecker(
                 checker!!.row, checker!!.column,
                 cords.first, cords.second
             )
+
             this.GetNextPlayer()
         } else if (availableBeats.contains(cords)) {
             val beatCheckers = this.board.GetCheckersBetween(
@@ -198,12 +242,13 @@ class Game : Serializable {
             availableBeats = this.board.GetAvailableBeats(
                 checker!!.row, checker!!.column
             )
+
             if (availableBeats.isEmpty()) {
                 this.GetNextPlayer()
             }
         } else {
             // Координаты не содержатся в списке доступных ходов
-            throw Exception("Недопустимый ход. Попробуйте снова.")
+            throw Exception(Strings.Companion.Errors.incorrectMove)
         }
     }
 

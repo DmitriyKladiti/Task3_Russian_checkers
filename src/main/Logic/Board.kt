@@ -246,6 +246,11 @@ class Board : Serializable {
             throw Exception("На конечной клетке уже стоит шашка")
         cellTo.SetChecker(cellFrom.checker!!)
         cellFrom.SetChecker(null)
+        if (cellTo.checker?.color == Colors.White && cellTo.checker?.row == 0 ||
+            cellTo.checker?.color == Colors.Black && cellTo.checker?.row == this.GetSize() - 1
+        ) {
+            this.MakeKing(cellTo.row, cellTo.column)
+        }
     }
 
     fun GetCheckersBetween(rowFrom: Int, columnFrom: Int, rowTo: Int, columnTo: Int):
@@ -278,6 +283,23 @@ class Board : Serializable {
         }
 
         return checkersBetween
+    }
+
+    fun GetCheckersByColor(color: Colors): List<Checker> {
+        val checkers = mutableListOf<Checker>()
+        val size = this.GetSize()
+
+        for (i in 0 until size) {
+            for (j in 0 until size) {
+                val cell = this.GetCell(i, j)
+                val checker = cell.checker
+                if (checker != null && checker.color == color) {
+                    checkers.add(checker)
+                }
+            }
+        }
+
+        return checkers
     }
 
 

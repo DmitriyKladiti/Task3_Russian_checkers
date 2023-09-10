@@ -10,6 +10,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/Logic" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/Main" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/IO" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/Common" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
