@@ -4,7 +4,6 @@ import java.io.*
 class Game : Serializable {
     //region Поля
     private var isStarted: Boolean = false
-
     private val playersCount: Int = 2
     private var playerCurrentIndex: Int = 0
     private var players: Array<Player> = Array(playersCount) { index ->
@@ -16,7 +15,7 @@ class Game : Serializable {
     }
     private var board: Board = Board()
     private var currentChecker: Checker? = null
-
+    private var currentGameSate: GameState = GameState.IsStarted
     //endregion
 
     //region Сеттеры
@@ -30,6 +29,10 @@ class Game : Serializable {
     //endregion
 
     //region Геттеры
+    fun GetGameState(): GameState {
+        return this.currentGameSate;
+    }
+
     fun GetIsStarted(): Boolean {
         return this.isStarted
     }
@@ -177,17 +180,17 @@ class Game : Serializable {
         }
     }
 
-    fun CheckGameOver(): GameResult {
+    fun CheckGameOver(): GameState {
         // Проверка на количество шашек каждого игрока
         val whiteCheckers = board.GetCheckersByColor(Colors.White)
         val blackCheckers = board.GetCheckersByColor(Colors.Black)
 
         if (whiteCheckers.isEmpty()) {
-            return GameResult.BlackWins
+            return GameState.BlackWins
         }
 
         if (blackCheckers.isEmpty()) {
-            return GameResult.WhiteWins
+            return GameState.WhiteWins
         }
 
         // Проверка на доступные ходы или атаки для текущего игрока
@@ -197,12 +200,12 @@ class Game : Serializable {
                 board.GetAvailableBeats(checker.row, checker.column).isNotEmpty()
             ) {
                 // Есть доступные ходы или атаки
-                return GameResult.StillPlaying
+                return GameState.IsStarted
             }
         }
 
         // Если у текущего игрока нет доступных ходов или атак, другой игрок победил
-        return if (this.GetCurrentPlayer().color == Colors.White) GameResult.BlackWins else GameResult.WhiteWins
+        return if (this.GetCurrentPlayer().color == Colors.White) GameState.BlackWins else GameState.WhiteWins
     }
 
     fun MakeMove(checker: Checker?, rowTo: Int, columnTo: Int) {
@@ -249,6 +252,13 @@ class Game : Serializable {
         } else {
             // Координаты не содержатся в списке доступных ходов
             throw Exception(Strings.Companion.Errors.incorrectMove)
+        }
+        this.currentGameSate = this.CheckGameOver()
+        if (this.currentGameSate == GameState.Draw ||
+            this.currentGameSate == GameState.BlackWins ||
+            this.currentGameSate == GameState.WhiteWins
+        ) {
+            this.isStarted = false;
         }
     }
 

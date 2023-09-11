@@ -195,7 +195,15 @@ class IOGUI : IO, Serializable {
                 this.Show("Ход игрока ${this.game.GetCurrentPlayer()}")
                 this.game.SelectAvailableBeats(this.game.GetCheckersThatCanBeat())
                 this.Show(this.game.GetBoard())
-
+                if (this.game.GetGameState() == GameState.Draw) {
+                    this.Show("Ничья")
+                }
+                if (this.game.GetGameState() == GameState.WhiteWins) {
+                    this.Show("Белые победили")
+                }
+                if (this.game.GetGameState() == GameState.BlackWins) {
+                    this.Show("Черные победили")
+                }
             }
             if (command == Commands.SelectChecker) {
                 this.game.UnSelectAll()
@@ -223,7 +231,7 @@ class IOGUI : IO, Serializable {
     override fun Start() {
         this.ExecuteCommand(Commands.Start)
         this.SetCurrentCommand(Commands.ShowBoard)
-        while (this.game.GetIsStarted()) {
+        while (true) {
             if (this.isReady) {
                 this.ExecuteCommand(this.GetCurrentCommand())
             }
