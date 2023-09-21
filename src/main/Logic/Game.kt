@@ -262,6 +262,10 @@ class Game : Serializable {
         }
     }
 
+    fun MakeKing(row: Int, column: Int) {
+        this.board.MakeKing(row, column)
+    }
+
     //region Сохранение/загрузка
     fun Save(filePath: String) {
         ObjectOutputStream(FileOutputStream(filePath)).use { outputStream ->

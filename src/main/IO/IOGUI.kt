@@ -237,6 +237,7 @@ class IOGUI : IO, Serializable {
             }
             Thread.sleep(50);
         }
+        this.ExecuteCommand(this.GetCurrentCommand())
     }
 
     //region Действия меню

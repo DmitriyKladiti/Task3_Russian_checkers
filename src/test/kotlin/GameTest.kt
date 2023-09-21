@@ -56,6 +56,17 @@ class GameTest {
         this.game.Start()
         this.game.Save("C:\\Users\\Дмитрий\\Desktop\\testKingSmallCornerAttack.txt")
     }
+
+    @Test
+    fun testTwoKings() {
+        val board = Board()
+        board.RemoveCheckers()
+        board.AddChecker(5, 2, Checker(5, 2, Colors.White,CheckerType.King))
+        board.AddChecker(2, 5, Checker(2, 5, Colors.Black,CheckerType.King))
+        this.game.SetBoard(board)
+        this.game.Start()
+        this.game.Save("C:\\Users\\Дмитрий\\Desktop\\testTwoKings.txt")
+    }
     //endregion
 
     //region Сохранение/загрузка

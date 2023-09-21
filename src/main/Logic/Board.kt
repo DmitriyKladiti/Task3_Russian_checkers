@@ -121,6 +121,45 @@ class Board : Serializable {
         return availableMoves
     }
 
+    fun GetCornerBeats(cell:Cell,row: Int, column: Int): List<Pair<Int, Int>> {
+        val cornerBeats = mutableListOf<Pair<Int, Int>>()
+        val checker = cell.checker ?: return emptyList()
+
+        val directions = listOf(Pair(-1, -1), Pair(-1, 1), Pair(1, -1), Pair(1, 1))
+
+        for ((rowDelta, colDelta) in directions) {
+            var steps = 1
+            var hasEncounteredEnemyChecker = false
+
+            while (true) {
+                val currentRow = row + rowDelta * steps
+                val currentColumn = column + colDelta * steps
+
+                if (!CheckCoordinate(currentRow, currentColumn)) break
+
+                val currentCell = GetCell(currentRow, currentColumn)
+                val currentChecker = currentCell.checker
+
+                if (currentChecker != null) {
+                    if (checker.color == currentChecker.color) break
+
+                    if (hasEncounteredEnemyChecker) break
+                    hasEncounteredEnemyChecker = true
+                } else {
+                    if (hasEncounteredEnemyChecker) {
+                        cornerBeats.add(Pair(currentRow, currentColumn))
+                        break
+                    }
+
+                    if (checker.type == CheckerType.Checker) break
+                }
+                steps++
+            }
+        }
+        return cornerBeats
+    }
+
+
     /**
      * Возвращает список доступных для атаки клеток для шашки или дамки.
      *
@@ -128,10 +167,9 @@ class Board : Serializable {
      * @param column Текущая колонка шашки или дамки.
      * @return Список доступных для атаки клеток в формате Pair(row, column).
      */
-    fun GetAvailableBeats(row: Int, column: Int): List<Pair<Int, Int>> {
+    fun GetAvailableBeats(cell: Cell, row: Int, column: Int): List<Pair<Int, Int>> {
         val availableBeats = mutableListOf<Pair<Int, Int>>()
 
-        val cell = GetCell(row, column)
         val checker = cell.checker ?: return emptyList()
 
         val directions = listOf(Pair(-1, -1), Pair(-1, 1), Pair(1, -1), Pair(1, 1))
@@ -162,10 +200,38 @@ class Board : Serializable {
                 steps++
             }
         }
+        val cornerBeatMoves = mutableListOf<Pair<Int, Int>>()
 
+        for (item in availableBeats) {
+            val cornerBeats = this.GetCornerBeats(this.GetCell(row,column), item.first, item.second)
+            if (cornerBeats.isNotEmpty()) {
+                cornerBeatMoves.add(item)
+            }
+        }
+
+// Если есть доступные бои уголком, вернуть их, иначе вернуть все доступные атаки
+        return if (cornerBeatMoves.isNotEmpty()) cornerBeatMoves else availableBeats
+
+//        val availableBeats2 = mutableListOf<Pair<Int, Int>>()
+//        for (item in availableBeats) {
+//            if (this.GetCell(row, column).checker == null) {
+//                var availableBeatsCorner = this.GetAvailableBeats(this.GetCell(row, column), item.first, item.second)
+//                if (availableBeatsCorner.isNotEmpty()) {
+//                    availableBeats2.add(item)
+//                    break;
+//                }
+//            }
+//        }
+//        if (availableBeats2.isNotEmpty())
+//            return availableBeats2;
+//        else
+//            return availableBeats
         return availableBeats
     }
 
+    fun GetAvailableBeats(row: Int, column: Int): List<Pair<Int, Int>> {
+        return this.GetAvailableBeats(GetCell(row, column), row, column);
+    }
 
     /**
      * Рекурсивный метод для добавления возможных ходов по диагонали.
